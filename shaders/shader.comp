@@ -1,0 +1,67 @@
+#version 450
+
+layout (binding = 0) uniform ComputeUniformBufferObject {
+    vec4 gravityPoint;
+    float deltaTime;
+} computeUBO;
+
+struct Particle {
+    vec3 position;
+    vec3 velocity;
+    vec3 color;
+};
+
+layout(std140, binding = 1) readonly buffer ParticleSSBOIn {
+    Particle particlesIn[];
+};
+
+layout(std140, binding = 2) buffer ParticleSSBOOut {
+    Particle particlesOut[];
+};
+
+layout (local_size_x = 256, local_size_y = 1, local_size_z = 1) in;
+
+vec3 hsv2rgb(vec3 hsv) {
+    float c = hsv.z * hsv.y; // Chroma
+    float h = hsv.x * 6.0;   // Hue sector
+    float x = c * (1.0 - abs(mod(h, 2.0) - 1.0));
+
+    vec3 rgb = vec3(0.0);
+    if (0.0 <= h && h < 1.0) rgb = vec3(c, x, 0.0);
+    else if (1.0 <= h && h < 2.0) rgb = vec3(x, c, 0.0);
+    else if (2.0 <= h && h < 3.0) rgb = vec3(0.0, c, x);
+    else if (3.0 <= h && h < 4.0) rgb = vec3(0.0, x, c);
+    else if (4.0 <= h && h < 5.0) rgb = vec3(x, 0.0, c);
+    else if (5.0 <= h && h < 6.0) rgb = vec3(c, 0.0, x);
+
+    vec3 m = vec3(hsv.z - c);
+    return rgb + m;
+}
+
+const float attractionStrength = 0.0000001f; //0.000001f;
+const float minAttractionDistance = 0.01f;
+
+void main()
+{
+    uint index = gl_GlobalInvocationID.x;
+
+    Particle particleIn = particlesIn[index];
+
+    particlesOut[index].position = particleIn.position + particleIn.velocity * computeUBO.deltaTime;
+
+    vec3 forceDirection = computeUBO.gravityPoint.xyz - particleIn.position;
+    float distanceSquared = max(dot(forceDirection, forceDirection), minAttractionDistance);
+    vec3 force = (attractionStrength * normalize(forceDirection)) / distanceSquared;
+
+    particlesOut[index].velocity = particleIn.velocity + force * computeUBO.deltaTime;
+
+
+    float speed = length(particlesOut[index].velocity);
+
+    float minSpeed = 0.0001f;
+    float maxSpeed = 0.001f;
+    float normalizedSpeed = clamp((speed - minSpeed) / (maxSpeed - minSpeed), 0.0, 1.0);
+
+    float hue = mix(0.5, 0.08, normalizedSpeed);
+    particlesOut[index].color = hsv2rgb(vec3(hue, 1.0, 1.0));
+}
