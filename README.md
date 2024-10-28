@@ -8,7 +8,7 @@ System specific instructions:
 * Mac you should install MoltenVK, GLFW, and GLM with brew (or manually) 
 
 
-There is no file configuration support as this is a prototype, but editing the code (in src) to change the number of particles, vertices, uniform buffers, and shaders is easy. 
+There is no file configuration support as this is a prototype, but editing the code to change the number of particles, vertices, uniform buffers, and shaders is easy. 
 
 
 I intend to come back to this prototype in the future to add file configuration, fields, and control mechanisms.
