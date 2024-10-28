@@ -6,9 +6,9 @@ layout (binding = 0) uniform ComputeUniformBufferObject {
 } computeUBO;
 
 struct Particle {
-    vec3 position;
-    vec3 velocity;
-    vec3 color;
+    vec4 position;
+    vec4 velocity;
+    vec4 color;
 };
 
 layout(std140, binding = 1) readonly buffer ParticleSSBOIn {
@@ -47,14 +47,13 @@ void main()
 
     Particle particleIn = particlesIn[index];
 
-    particlesOut[index].position = particleIn.position + particleIn.velocity * computeUBO.deltaTime;
+    particlesOut[index].position.xyz = particleIn.position.xyz + particleIn.velocity.xyz * computeUBO.deltaTime;
 
-    vec3 forceDirection = computeUBO.gravityPoint.xyz - particleIn.position;
+    vec3 forceDirection = computeUBO.gravityPoint.xyz - particleIn.position.xyz;
     float distanceSquared = max(dot(forceDirection, forceDirection), minAttractionDistance);
     vec3 force = (attractionStrength * normalize(forceDirection)) / distanceSquared;
 
-    particlesOut[index].velocity = particleIn.velocity + force * computeUBO.deltaTime;
-
+    particlesOut[index].velocity.xyz = particleIn.velocity.xyz + force * computeUBO.deltaTime;
 
     float speed = length(particlesOut[index].velocity);
 
@@ -63,5 +62,5 @@ void main()
     float normalizedSpeed = clamp((speed - minSpeed) / (maxSpeed - minSpeed), 0.0, 1.0);
 
     float hue = mix(0.5, 0.08, normalizedSpeed);
-    particlesOut[index].color = hsv2rgb(vec3(hue, 1.0, 1.0));
+    particlesOut[index].color.xyz = hsv2rgb(vec3(hue, 1.0, 1.0));
 }

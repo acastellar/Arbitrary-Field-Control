@@ -13,8 +13,8 @@ VkVertexInputBindingDescription Vertex::getBindingDescription() {
     return bindingDescription;
 }
 
-std::array<VkVertexInputAttributeDescription, 2> Vertex::getAttributeDescriptions() {
-    std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions{};
+std::vector<VkVertexInputAttributeDescription> Vertex::getAttributeDescriptions() {
+    std::vector<VkVertexInputAttributeDescription> attributeDescriptions(2);
 
     attributeDescriptions[0].binding = 0;
     attributeDescriptions[0].location = 0;
@@ -234,8 +234,8 @@ void GraphicsPipeline::initPipeline(VkShaderModule vertexShader, VkShaderModule 
     auto vertexAttributeDescriptions = Vertex::getAttributeDescriptions();
 
     vertexInputCreateInfo.vertexBindingDescriptionCount = 1;
-    vertexInputCreateInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(vertexAttributeDescriptions.size());
     vertexInputCreateInfo.pVertexBindingDescriptions = &vertexBindingDescription;
+    vertexInputCreateInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(vertexAttributeDescriptions.size());
     vertexInputCreateInfo.pVertexAttributeDescriptions = vertexAttributeDescriptions.data();
 
     // Input Assembly
@@ -352,13 +352,10 @@ void GraphicsPipeline::initPipeline(VkShaderModule vertexShader, VkShaderModule 
     // Particle Input
     VkPipelineVertexInputStateCreateInfo& particleInputCreateInfo = vertexInputCreateInfo;
 
-    auto particleBindingDescription = Particle::getBindingDescription();
-    auto particleAttributeDescriptions = Particle::getAttributeDescriptions();
-
     particleInputCreateInfo.vertexBindingDescriptionCount = 1;
-    particleInputCreateInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(particleAttributeDescriptions.size());
-    particleInputCreateInfo.pVertexBindingDescriptions = &particleBindingDescription;
-    particleInputCreateInfo.pVertexAttributeDescriptions = particleAttributeDescriptions.data();
+    particleInputCreateInfo.pVertexBindingDescriptions = &_particlebindingdescription;
+    particleInputCreateInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(_particleattributedescriptions.size());
+    particleInputCreateInfo.pVertexAttributeDescriptions = _particleattributedescriptions.data();
 
     // Particle Input Assembly
     VkPipelineInputAssemblyStateCreateInfo& particleInputAssemblyCreateInfo = inputAssemblyCreateInfo;
@@ -396,38 +393,15 @@ GraphicsPipeline::~GraphicsPipeline() {
 }
 
 GraphicsPipeline::GraphicsPipeline(VkDevice device, VkFormat swapchainFormat, VkFormat depthFormat, VkSampleCountFlagBits msaaSamples,
+                                   VkVertexInputBindingDescription particleBindingDescription,
+                                   vector<VkVertexInputAttributeDescription> particleAttributeDescriptions,
                                    std::string vertexShaderFilename, std::string fragmentShaderFilename,
                                    std::string particleVertexShaderFilename, std::string particleFragmentShaderFilename)
 : _device(device), _format(swapchainFormat), _depthformat(depthFormat), _msaasamples(msaaSamples),
+_particlebindingdescription(particleBindingDescription), _particleattributedescriptions(particleAttributeDescriptions),
 _vertshadername(vertexShaderFilename), _fragshadername(fragmentShaderFilename),
 _vertparticleshadername(particleVertexShaderFilename), _fragparticleshadername(particleFragmentShaderFilename),
 pipeline(nullptr), renderpass(nullptr), layout(nullptr) {}
-
-/// Compute Pipeline ///
-VkVertexInputBindingDescription Particle::getBindingDescription() {
-    VkVertexInputBindingDescription bindingDescription{};
-    bindingDescription.binding = 0;
-    bindingDescription.stride = sizeof(Particle);
-    bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-
-    return bindingDescription;
-}
-
-std::array<VkVertexInputAttributeDescription, 2> Particle::getAttributeDescriptions() {
-    std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions{};
-
-    attributeDescriptions[0].binding = 0;
-    attributeDescriptions[0].location = 0;
-    attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-    attributeDescriptions[0].offset = offsetof(Particle, position);
-
-    attributeDescriptions[1].binding = 0;
-    attributeDescriptions[1].location = 1;
-    attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-    attributeDescriptions[1].offset = offsetof(Particle, color);
-
-    return attributeDescriptions;
-}
 
 void ComputePipeline::create() {
     VkShaderModule computeShader = loadShader(_device, _computeshadername);

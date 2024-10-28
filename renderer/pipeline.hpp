@@ -10,16 +10,12 @@ struct PerspectiveUniformBufferObject {
     alignas(16) glm::mat4 proj;
 };
 
-struct ModelUniformBufferObject {
-    alignas(16) glm::mat4 model;
-};
-
 struct Vertex {
     alignas(16) glm::vec3 pos;
     alignas(16) glm::vec3 color;
 
     static VkVertexInputBindingDescription getBindingDescription();
-    static std::array<VkVertexInputAttributeDescription, 2> getAttributeDescriptions();
+    static std::vector<VkVertexInputAttributeDescription> getAttributeDescriptions();
     bool operator==(const Vertex& other) const;
 };
 
@@ -47,6 +43,9 @@ private:
     std::string _fragshadername;
     std::string _vertparticleshadername;
     std::string _fragparticleshadername;
+
+    VkVertexInputBindingDescription _particlebindingdescription;
+    std::vector<VkVertexInputAttributeDescription> _particleattributedescriptions;
 public:
     VkPipeline pipeline;
     VkPipeline particlepipeline;
@@ -59,22 +58,10 @@ public:
     ~GraphicsPipeline();
 
     GraphicsPipeline(VkDevice device, VkFormat swapchainFormat, VkFormat depthFormat, VkSampleCountFlagBits msaaSamples,
+                     VkVertexInputBindingDescription particleBindingDescription,
+                     std::vector<VkVertexInputAttributeDescription> particleAttributeDescriptions,
                      std::string vertexShaderFilename, std::string fragmentShaderFilename,
                      std::string particleVertexShaderFilename, std::string particleFragmentShaderFilename);
-};
-
-struct ComputeUniformBufferObject {
-    alignas(16) glm::vec4 gravityPoint;
-    alignas(16) float deltaTime;
-};
-
-struct Particle {
-    alignas(16) glm::vec3 position;
-    alignas(16) glm::vec3 velocity;
-    alignas(16) glm::vec3 color;
-
-    static VkVertexInputBindingDescription getBindingDescription();
-    static std::array<VkVertexInputAttributeDescription, 2> getAttributeDescriptions();
 };
 
 class ComputePipeline {

@@ -8,14 +8,38 @@
 #include "pipeline.hpp"
 #include "buffer.hpp"
 
-const int MAX_FRAMES_IN_FLIGHT = 3;
+typedef void (*graphicsUpdateCallback)(void *uniformBuffer, float deltaTime, uint32_t width, uint32_t height);
+typedef void (*computeUpdateCallback)(void *uniformBuffer, float deltaTime, uint32_t width, uint32_t height);
+typedef void (*computeInitCallback)(void *storageBuffer, uint32_t particleCount, uint32_t width, uint32_t height);
 
-const uint32_t PARTICLE_COUNT = (int) (10000000 / 256) * (256);
-const float VELOCITY_FACTOR = 0.0001f;
+struct EngineConfiguration {
+    std::string name;
 
-class RenderingEngine {
+    int maxFramesInFlight = 3;
+    int forcedPresentMode = -1;
+
+    std::string particleFragmentShaderName;
+    std::string particleVertexShaderName;
+    std::string particleComputeShaderName;
+    std::string triangleFragmentShaderName;
+    std::string triangleVertexShaderName;
+
+    graphicsUpdateCallback graphicsUpdateCallback;
+    computeUpdateCallback computeUpdateCallback;
+    computeInitCallback computeInitCallback;
+
+    size_t computeUniformBufferSize = 0;
+    size_t graphicsUniformBufferSize = 0;
+
+    uint32_t particleCount = 0;
+    size_t particleMemorySize = 0;
+    VkVertexInputBindingDescription particleBindingDescription;
+    std::vector<VkVertexInputAttributeDescription> particleAttributeDescriptions;
+};
+
+class VulkanEngine {
 private:
-    std::string _name;
+    EngineConfiguration _configuration;
 
     Window* _window;
     VkDevice _device;
@@ -99,9 +123,8 @@ private:
 
     void deduplicateVertices();
 public:
-    RenderingEngine(std::string name, int forcedPresentMode);
-    RenderingEngine(std::string name);
-    ~RenderingEngine();
+    VulkanEngine(const EngineConfiguration& configuration);
+    ~VulkanEngine();
 
 
     void init();
@@ -111,5 +134,5 @@ public:
 
     int windowShouldClose();
 
-    void framebufferResized();
+    void framebufferResizedCallback();
 };

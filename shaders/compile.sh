@@ -1,5 +1,5 @@
-
-for file in ./*.{vert,comp,frag,glsl}
+#!/bin/bash
+for file in ./*.{vert,comp,frag}
 do
   if [ -e "$file" ]; then
     filename=$(basename "$file")

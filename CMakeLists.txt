@@ -22,6 +22,10 @@ ENDIF()
 # Sources
 add_executable(ArbitraryFieldControl
         src/main.cpp
+        src/particle.hpp
+        src/uniformbuffers.hpp
+        src/update.hpp
+
         renderer/engine.cpp
         renderer/engine.hpp
         renderer/window.cpp
