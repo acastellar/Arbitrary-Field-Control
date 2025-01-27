@@ -8,9 +8,9 @@ System specific instructions:
 * Mac you should install MoltenVK, GLFW, and GLM with brew (or manually) 
 
 
-There is no file configuration support as this is a prototype, but editing the code to change the number of particles, vertices, uniform buffers, and shaders is easy. 
+There are no configuration files in this prototype, so the number of particles, vertices, uniform buffers, and shaders must be changed in the source files. 
 
 
 I intend to come back to this prototype in the future to add file configuration, fields, and control mechanisms.
 
-An additional note: When on linux the program forces mailbox present mode to avoid a driver bug on current Nvidia drivers. If you are encountering issues you can disable this by setting forceLinuxPresentMode to false in main.
+An additional note: If on linux, the program forces mailbox present mode to avoid a driver bug on current Nvidia drivers. If you are encountering issues you can disable this by setting forceLinuxPresentMode to false in main.
